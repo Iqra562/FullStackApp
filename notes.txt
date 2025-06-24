@@ -9,5 +9,5 @@ dependency v/s devdependency
 devdepency: which is use during development not for production like nodemon to start server when files get save
 
 
-it will store as a main dependency : npm i nodemon
+it will install as a main dependency : npm i nodemon
 for dev dependency : npm install --save-dev nodemon
