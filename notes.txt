@@ -1,7 +1,19 @@
 js supports two types of importing 
 1-common js 
 2-module js
+
+| Feature                 | CommonJS                           | ES Modules (Module JS)                                                                               |
+| ----------------------- | ---------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| **Syntax**              | `require()` and `module.exports`   | `import` and `export`                                                                                |
+| **Usage Environment**   | Primarily Node.js (older versions) | Browser and modern Node.js                                                                           |
+| **Loading Type**        | Synchronous                        | Asynchronous                                                                                         |
+| **File Extension**      | `.js` (default in Node.js)         | `.js` (can use `.mjs` in Node.js)                                                                    |
+| **Example (Import)**    | `const fs = require('fs');`        | `import fs from 'fs';`                                                                               |
+| **Example (Export)**    | `module.exports = myFunction;`     | `export default myFunction;`                                                                         |
+| **Support in Browsers** | Not supported directly             | Natively supported in modern browsers                                                                |
+
 we will use module js
+
 
 
 dependency v/s devdependency
