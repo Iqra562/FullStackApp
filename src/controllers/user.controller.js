@@ -3,6 +3,7 @@ import { ApiError } from "../utils/ApiError.js";
 import {User} from "../models/user.model.js"
 import {uploadOnCloudinary} from "../utils/cloudinary.js"
 import { ApiResponse } from "../utils/ApiResponse.js";
+import { use } from "react";
  const registerUser = asyncHandler(async(req,res)=>{
       //  res.status(200).json({
       //   message:"OK"
@@ -54,5 +55,29 @@ import { ApiResponse } from "../utils/ApiResponse.js";
       )
  })
 
+ const loginUser = asyncHandler(async(req,res)=>{
+   const {email,username,password} = req.body
+   if(!username || !email){
+    throw new ApiError(400,"username or password is required")
+   }
 
- export {registerUser}
+ const user = await  User.findOne({
+      $or:[{username},{email}]
+   })
+
+   if(!user){
+     throw new ApiError(404,"User doesn't exist")
+   }
+
+   const isPasswordValid = await user.isPasswordCorrect(password)
+   if(!isPasswordValid){
+    throw new ApiError(401,"invalid user  ")
+   }
+ })
+
+
+ export {
+      registerUser,
+      loginUser
+
+ }
