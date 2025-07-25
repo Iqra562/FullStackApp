@@ -198,7 +198,7 @@ const updateAccountDetails =asyncHandler(async(req,res)=>{
    throw new ApiError(400,"All fields are required")
  }
 
- const user = User.findByIdAndUpdate(
+ const user = await User.findByIdAndUpdate(
       req.user?._id,
       {
             $set:{
@@ -243,6 +243,70 @@ const updateUserAvatar = asyncHandler(async(req,res)=>{
    )
 })
 
+const getUserChannelProfile = asyncHandler(async(req,res)=>{
+      const {username} = req.params
+      if(!username){
+      throw new ApiError(400, "username is missiing")
+      }
+      const channel = await User.aggregate([
+            {
+                  $match:{
+                        username:username?.toLowerCase() 
+                  }
+            },{
+                  $lookup:{
+                        from :"subscriptions",
+                        localField:"_id",
+                        foreignField:"channel",
+                        as:"subscribers"
+
+                  }
+            },     
+            {
+                  $lookup:{
+                        from :"subscriptions",
+                        localField:"_id",
+                        foreignField:"subscriber",
+                        as:"subscribed"
+
+                  }
+            },  
+               {
+                  $addFields:{
+                        subscribersCount:{
+                               $size:"$subscribers"
+                        },
+                        subscribedChannelCount:{
+                              $size:"$subscribed"
+                        },
+                        isSubscribed:{
+                              $cond:{
+                                    if:{$in :[req.user?._id,"$subscribers.subscriber"]},
+                                    then:true,
+                                    else:false
+                              }
+                        }
+                  }
+            },
+            {
+                  $project:{
+                        fullName:1,
+                        username:1,
+                        subscribersCount:1,
+                        subscribedChannelCount:1,
+                        isSubscribed:1,
+                        avatar:1,
+                        coverImage:1,
+                        email:1
+                  }
+            }
+      ])
+      if(!channel?.length){
+        throw new ApiError(404,"channel doesnt exist")
+      }
+      return res.status(200).json(new ApiResponse(200,channel[0],"User channel fetched successfullly"))
+})
+
 
  export {
       registerUser,
@@ -252,6 +316,7 @@ const updateUserAvatar = asyncHandler(async(req,res)=>{
       changeCurrentPassword,
       getCurrentUser,
       updateAccountDetails,
-      updateUserAvatar
+      updateUserAvatar,
+      getUserChannelProfile
 
  }
