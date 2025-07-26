@@ -4,6 +4,7 @@ import {User} from "../models/user.model.js"
 import {uploadOnCloudinary} from "../utils/cloudinary.js"
 import { ApiResponse } from "../utils/ApiResponse.js";
 import jwt from 'jsonwebtoken'
+import mongoose from "mongoose";
 const generateAccessAndRefreshTokens = async(userId)=>{
       try{
       const user =    await User.findById(userId);
@@ -109,8 +110,8 @@ const generateAccessAndRefreshTokens = async(userId)=>{
  await User.findByIdAndUpdate(
       req.user._id,
       {
-            $set:{
-                  refreshToken:undefined
+            $unset:{
+                  refreshToken:1
             }
       },{
             new:true
@@ -307,6 +308,53 @@ const getUserChannelProfile = asyncHandler(async(req,res)=>{
       return res.status(200).json(new ApiResponse(200,channel[0],"User channel fetched successfullly"))
 })
 
+const getWatchHistory= asyncHandler(async(req,res)=>{
+    const user = await User.aggregate([
+      {
+            $match:{
+            _id:new mongoose.Types.ObjectId(req.user._id)
+            //here we coudnt directly pass req.user.id bcz it is strings and aggregation pipelines directly send data to mongodb so we need to convert into object id
+            }
+
+      },{
+            $lookup:{
+                  from:"videos",
+                  localField:"watchHistory",
+            foreignField:"_id",
+            as:"watchHistory",
+            pipeline:[
+                  {
+                        $lookup:
+                  {
+                        from:"users",
+                        localField:"owner",
+                        foreignField:"_id",
+                        as:"owner",
+                        pipeline:[
+                              {
+                                    $project:{
+                                          fullName:1,
+                                          username:1,
+                                          avatar:1
+                                    }
+                              }
+                        ]
+                  }
+                  },{
+                        $addFields:{
+                              owner:{
+                                    $first:"$owner"
+                              }
+                        }
+                  }
+            ]
+            }
+      }
+    ])
+    return res.status(200).json(new ApiResponse(200,user[0].watchHistory,"wtach history fetched successfully"))
+}
+)
+
 
  export {
       registerUser,
@@ -317,6 +365,7 @@ const getUserChannelProfile = asyncHandler(async(req,res)=>{
       getCurrentUser,
       updateAccountDetails,
       updateUserAvatar,
-      getUserChannelProfile
+      getUserChannelProfile,
+      getWatchHistory
 
  }
