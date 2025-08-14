@@ -28,7 +28,8 @@ const userSchema = new Schema({
      },
      avatar:{
         type:String,
-        required:true,
+      //   default:"picture.png",
+      //   required:true,
      },
      coverImage:{
         type:String,
